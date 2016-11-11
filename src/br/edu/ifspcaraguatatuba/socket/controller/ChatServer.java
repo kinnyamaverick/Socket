@@ -1,4 +1,4 @@
-package br.edu.ifspcaraguatatuba.socket;
+package br.edu.ifspcaraguatatuba.socket.controller;
 
 import java.awt.TextArea;
 import java.io.IOException;
