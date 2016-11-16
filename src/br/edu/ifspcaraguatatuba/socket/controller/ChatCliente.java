@@ -1,4 +1,4 @@
-package br.edu.ifspcaraguatatuba.socket;
+package br.edu.ifspcaraguatatuba.socket.controller;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
