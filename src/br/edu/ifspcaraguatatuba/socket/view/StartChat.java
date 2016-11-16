@@ -3,8 +3,11 @@ package br.edu.ifspcaraguatatuba.view;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Font;
+import java.awt.TextField;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.net.InetAddress;
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -12,7 +15,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer;
+
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -30,8 +35,9 @@ public class StartChat extends JFrame {
 	//=====================================================================================================================================================
 	
 	private JTextField textoParaEnviar;
-	
+	private JTextField textField;
 	private JTextArea textoRecebido;
+	private JTextArea textArea;
 	
 	private JButton botao;
 	private JTextField txtIp;
@@ -55,6 +61,18 @@ public class StartChat extends JFrame {
 		getContentPane().setLayout(null);
 		textoParaEnviar = new JTextField();
 		textoParaEnviar.setFont(fonte);
+		textoParaEnviar.addKeyListener (new KeyAdapter() {
+			
+			//Aqui quando digitar algum texto e aperta a tecla enter irá acionar o botão enviar!!!
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					botao.doClick();
+				}
+				
+			}
+			
+		});
 		
 		
 		Container envio = new JPanel();
@@ -62,6 +80,7 @@ public class StartChat extends JFrame {
 		envio.setLayout(new BorderLayout());
 		envio.add(BorderLayout.CENTER, textoParaEnviar);
 		getContentPane().add(BorderLayout.SOUTH, envio);
+		
 		
 		
 		textoRecebido = new JTextArea();
@@ -73,26 +92,33 @@ public class StartChat extends JFrame {
 		getContentPane().add(scroll);
 		getContentPane().add(BorderLayout.SOUTH, envio);
 		botao = new JButton("Enviar");
+		botao.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					String textoParaEnviar = textField.getText();
+					String textoRecebido = textArea.getText();
+					textoRecebido += InetAddress.getLocalHost().getHostName() + "->" + "Bem vindo \n";
+					textArea.setText(textoRecebido);
+					
+					textField.setText(null);
+					textField.setCaretPosition(0);
+					
+				} catch (Exception e) {
+					e.getMessage();
+				} 
+				
+			
+			}
+		});
 		botao.setBounds(487, 468, 101, 34);
 		getContentPane().add(botao);
 		botao.setFont(fonte);
-		botao.addKeyListener (new KeyAdapter() {
-		
-				
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					botao.doClick();
-				}
-				
-			}
-			
-		});
+	
 		
 		JButton btnConect = new JButton("Conectar");
 		btnConect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ChatServer ChatServer = new ChatServer(textoRecebido);
+				ChatServer ChatServer = new ChatServer();
 							
 			}
 		});
@@ -121,6 +147,13 @@ public class StartChat extends JFrame {
 		getContentPane().add(lblPorta);
 		
 		JButton btnConectIp = new JButton("Conectar");
+		btnConectIp.addActionListener(new ActionListener() {
+			
+
+			public void actionPerformed(ActionEvent x) {
+				ChatCliente ChatCliente = new ChatCliente();
+			}
+		});
 		btnConectIp.setBounds(199, 434, 91, 23);
 		getContentPane().add(btnConectIp);
 		
