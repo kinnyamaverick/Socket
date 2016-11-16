@@ -3,7 +3,6 @@ package br.edu.ifspcaraguatatuba.socket.controller;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.TextArea;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
@@ -32,70 +31,69 @@ public class ChatCliente extends JFrame {
 	static JTextArea textoRecebido;
 	Scanner leitor;
 	List<PrintWriter> escritores = new ArrayList<>();
-	
-	
-	private class lerServidor implements Runnable{
+
+	private class lerServidor implements Runnable {
 
 		Scanner leitor;
-		public lerServidor(Socket socket){
-			try{
-			leitor = new Scanner(socket.getInputStream());
-			}catch(Exception e){
-				
+
+		public lerServidor(Socket socket) {
+			try {
+				leitor = new Scanner(socket.getInputStream());
+			} catch (Exception e) {
+
 			}
 		}
+
 		@Override
 		public void run() {
-			try{
-			String texto;
-			while((texto = leitor.nextLine()) != null){
-				textoRecebido.append(texto + "\n");
-				
+			try {
+				String texto;
+				while ((texto = leitor.nextLine()) != null) {
+					textoRecebido.append(texto + "\n");
+
+				}
+
+			} catch (Exception x) {
+
 			}
-			
-		}catch(Exception x){
-			
+
 		}
-			
-		}
-		
+
 	}
-	
-	
-	public ChatCliente(String nome){
+
+	public ChatCliente(String nome) {
 		super("Chat " + nome);
 		this.nome = nome;
-		
+
 		Font fonte = new Font("Serif", Font.PLAIN, 26);
 		textoParaEnviar = new JTextField();
 		textoParaEnviar.setFont(fonte);
 		JButton botao = new JButton("Enviar");
 		botao.setFont(fonte);
 		botao.addActionListener(new EnviarListener());
-		
+
 		Container envio = new JPanel();
 		envio.setLayout(new BorderLayout());
 		envio.add(BorderLayout.CENTER, textoParaEnviar);
 		envio.add(BorderLayout.EAST, botao);
 		getContentPane().add(BorderLayout.SOUTH, envio);
-		
-		
+
 		textoRecebido = new JTextArea();
 		textoRecebido.setFont(fonte);
 		JScrollPane scroll = new JScrollPane(textoRecebido);
-		
+
 		getContentPane().add(BorderLayout.CENTER, scroll);
 		getContentPane().add(BorderLayout.SOUTH, envio);
-		
+
 		configurarRede();
-		
+
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(500,500);
+		setSize(500, 500);
 		setVisible(true);
 		setLocationRelativeTo(null);
 	}
-	
-	private class EnviarListener implements ActionListener{
+
+	private class EnviarListener implements ActionListener {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
@@ -104,30 +102,18 @@ public class ChatCliente extends JFrame {
 			textoParaEnviar.setText("");
 			textoParaEnviar.requestFocus();
 		}
-		
+
 	}
-	
-	private void configurarRede(){
-		try{
-		socket = new Socket("10.10.112.5", 2001);
-		escritor = new PrintWriter(socket.getOutputStream());
-		leitor = new Scanner(socket.getInputStream());
-		new Thread(new lerServidor(socket)).start();
-		}catch(Exception e){
-			
-			}
-		}
-	
-	private void encaminharParaTodos(String texto){
-		for(PrintWriter w : escritores){
-			try{
-			w.println(texto);
-			w.flush();
-			}catch(Exception x){
-				
-			}
+
+	private void configurarRede() {
+		try {
+			socket = new Socket("10.10.112.5", 2001);
+			escritor = new PrintWriter(socket.getOutputStream());
+			leitor = new Scanner(socket.getInputStream());
+			new Thread(new lerServidor(socket)).start();
+		} catch (Exception e) {
+
 		}
 	}
-	
 
 }
