@@ -6,7 +6,14 @@ import java.awt.Font;
 import java.awt.TextField;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,7 +24,8 @@ import javax.swing.JTextField;
 
 import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer;
-
+import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente.lerServidor;
+import br.edu.ifspcaraguatatuba.socket.controller.ChatServer.EscutaCliente;
 
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
@@ -41,6 +49,7 @@ public class StartChat extends JFrame {
 	
 	private JButton botao;
 	private JTextField txtIp;
+	private JTextField txtPorta;
 	
 	
 	//=====================================================================================================================================================	
@@ -63,7 +72,7 @@ public class StartChat extends JFrame {
 		textoParaEnviar.setFont(fonte);
 		textoParaEnviar.addKeyListener (new KeyAdapter() {
 			
-			//Aqui quando digitar algum texto e aperta a tecla enter irá acionar o botão enviar!!!
+			//Aqui quando digitar algum texto e aperta a tecla 'enter' irá acionar o botão enviar!!!
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
@@ -118,25 +127,21 @@ public class StartChat extends JFrame {
 		JButton btnConect = new JButton("Conectar");
 		btnConect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ChatServer ChatServer = new ChatServer();
+				
+				ChatServer();
+		
+					
+					
+				
 							
 			}
 		});
 		btnConect.setBounds(497, 435, 91, 22);
 		getContentPane().add(btnConect);
 		
-		JFormattedTextField txtPort = new JFormattedTextField();
-		txtPort.setBounds(421, 435, 62, 20);
-		getContentPane().add(txtPort);
-		
 		JLabel lblNewLabel = new JLabel("Porta");
 		lblNewLabel.setBounds(437, 422, 46, 14);
 		getContentPane().add(lblNewLabel);
-		
-		JFormattedTextField formatxtPortIp = new JFormattedTextField();
-		formatxtPortIp.setText("");
-		formatxtPortIp.setBounds(118, 435, 71, 20);
-		getContentPane().add(formatxtPortIp);
 		
 		JLabel lblIp = new JLabel("IP");
 		lblIp.setBounds(51, 422, 46, 14);
@@ -151,7 +156,8 @@ public class StartChat extends JFrame {
 			
 
 			public void actionPerformed(ActionEvent x) {
-				ChatCliente ChatCliente = new ChatCliente();
+				configurarRede();
+				
 			}
 		});
 		btnConectIp.setBounds(199, 434, 91, 23);
@@ -171,6 +177,16 @@ public class StartChat extends JFrame {
 		getContentPane().add(txtIp);
 		txtIp.setColumns(10);
 		
+		txtPorta = new JTextField();
+		txtPorta.setBounds(408, 435, 86, 20);
+		getContentPane().add(txtPorta);
+		txtPorta.setColumns(10);
+		
+		txtPortIp = new JTextField();
+		txtPortIp.setBounds(132, 435, 57, 20);
+		getContentPane().add(txtPortIp);
+		txtPortIp.setColumns(10);
+		
 		
 		setTitle("Chat");
 		setSize(594,529);
@@ -180,5 +196,134 @@ public class StartChat extends JFrame {
 		setVisible(true);
 		
 		
+	}
+//-------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------
+								//Cliente
+	
+	
+	Socket socket;
+	PrintWriter escritor;
+	String nome;
+	Scanner leitor;
+	List<PrintWriter> escritores = new ArrayList<>();
+	private JTextField txtPortIp;
+
+	public class lerServidor implements Runnable {
+
+		Scanner leitor;
+
+		public lerServidor(Socket socket) {
+			try {
+				leitor = new Scanner(socket.getInputStream());
+			} catch (Exception e) {
+
+			}
+		}
+
+		@Override
+		public void run() {
+			try {
+				String texto;
+				while ((texto = leitor.nextLine()) != null) {
+					textoRecebido.append(texto + "\n");
+
+				}
+
+			} catch (Exception x) {
+
+			}
+
+		}
+
+	}
+
+
+	private class EnviarListener implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			escritor.println(nome + " digitou: " + textoParaEnviar.getText());
+			escritor.flush();
+			textoParaEnviar.setText("");
+			textoParaEnviar.requestFocus();
+		}
+
+	}
+
+	private void configurarRede() {
+		
+		String IP = txtIp.getText(); 
+		int port = Integer.parseInt(txtPortIp.getText());
+		
+		try {
+			socket = new Socket(IP, port);
+			escritor = new PrintWriter(socket.getOutputStream());
+			leitor = new Scanner(socket.getInputStream());
+			new Thread(new lerServidor(socket)).start();
+		} catch (Exception e) {
+
+		}
+	}
+	//-------------------------------------------------------------------------------------
+	//-------------------------------------------------------------------------------------
+	
+								//Servidor
+	
+	
+	
+public void ChatServer() {
+
+		
+		int port = Integer.parseInt(txtPorta.getText());
+		ServerSocket server;
+		
+		
+		
+		
+		
+		try {
+			
+			
+			server = new ServerSocket(port);
+
+			while (true) {
+				System.out.println("Esperando conexção com o cliente");
+				Socket socket = server.accept();
+				System.out.println("Nova conexão com o cliente " + socket.getInetAddress().getHostAddress());
+				new Thread(new EscutaCliente(socket)).start();
+				PrintWriter p = new PrintWriter(socket.getOutputStream());
+				escritores.add(p);
+			}
+		} catch (IOException e) {
+		}
+	}
+
+	public class EscutaCliente implements Runnable {
+
+		Scanner leitor;
+
+		public EscutaCliente(Socket socket) {
+			try {
+				leitor = new Scanner(socket.getInputStream());
+			} catch (Exception e) {
+
+			}
+		}
+
+		@Override
+		public void run() {
+			try {
+				String texto;
+				while ((texto = leitor.nextLine()) != null) {
+					System.out.println(texto);
+					textoRecebido.append(texto);
+
+				}
+			} catch (Exception e) {
+
+			}
+		}
+
 	}
 }
