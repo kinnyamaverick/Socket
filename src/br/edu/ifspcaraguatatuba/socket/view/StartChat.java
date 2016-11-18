@@ -1,12 +1,17 @@
-package br.edu.ifspcaraguatatuba.view;
+package br.edu.ifspcaraguatatuba.socket.view;
 
 import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+<<<<<<< HEAD
+=======
 import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -14,9 +19,11 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+>>>>>>> upstream/master
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -24,6 +31,8 @@ import javax.swing.JTextField;
 
 import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer;
+<<<<<<< HEAD
+=======
 import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente.lerServidor;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer.EscutaCliente;
 
@@ -33,6 +42,7 @@ import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+>>>>>>> upstream/master
 
 public class StartChat extends JFrame {
 
@@ -42,14 +52,27 @@ public class StartChat extends JFrame {
 	//==============================================================Atributos==============================================================================
 	//=====================================================================================================================================================
 	
-	private JTextField textoParaEnviar;
-	private JTextField textField;
-	private JTextArea textoRecebido;
-	private JTextArea textArea;
+	private Container envio;
 	
+	private JTextField textoParaEnviar;
+	private JTextField txtPort;
+	private JTextField txtPortIp;
+	private JTextField txtIp;
+	
+	private JTextArea textoRecebido;
+	
+<<<<<<< HEAD
+	private JButton btnEnviarMsg;
+	private JButton btnConect;
+	private JButton btnConectIp;
+	
+	private ChatServer server;
+	private ChatCliente client;
+=======
 	private JButton botao;
 	private JTextField txtIp;
 	private JTextField txtPorta;
+>>>>>>> upstream/master
 	
 	
 	//=====================================================================================================================================================	
@@ -64,27 +87,31 @@ public class StartChat extends JFrame {
 	//===============================================================Métodos===============================================================================
 	//=====================================================================================================================================================
 
-	public void initComponent (){
+	public void initComponent () {
 		
 		Font fonte = new Font("Serif", Font.PLAIN, 26);
 		getContentPane().setLayout(null);
 		textoParaEnviar = new JTextField();
+		textoParaEnviar.setEnabled(false);
 		textoParaEnviar.setFont(fonte);
 		textoParaEnviar.addKeyListener (new KeyAdapter() {
 			
+<<<<<<< HEAD
+			// Aqui quando digitar algum texto e aperta a tecla enter irá acionar o botão enviar!!!
+=======
 			//Aqui quando digitar algum texto e aperta a tecla 'enter' irá acionar o botão enviar!!!
+>>>>>>> upstream/master
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					botao.doClick();
+					btnEnviarMsg.doClick();
 				}
-				
 			}
 			
 		});
 		
 		
-		Container envio = new JPanel();
+		envio = new JPanel();
 		envio.setBounds(0, 468, 492, 34);
 		envio.setLayout(new BorderLayout());
 		envio.add(BorderLayout.CENTER, textoParaEnviar);
@@ -100,33 +127,47 @@ public class StartChat extends JFrame {
 		
 		getContentPane().add(scroll);
 		getContentPane().add(BorderLayout.SOUTH, envio);
-		botao = new JButton("Enviar");
-		botao.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				try {
-					String textoParaEnviar = textField.getText();
-					String textoRecebido = textArea.getText();
-					textoRecebido += InetAddress.getLocalHost().getHostName() + "->" + "Bem vindo \n";
-					textArea.setText(textoRecebido);
-					
-					textField.setText(null);
-					textField.setCaretPosition(0);
-					
-				} catch (Exception e) {
-					e.getMessage();
-				} 
+		btnEnviarMsg = new JButton("Enviar");
+		btnEnviarMsg.setEnabled(false);
+		btnEnviarMsg.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) { // Botão de enviar mensagem
+				// TODO criar lógica para enviar mensagem
+				String message = textoParaEnviar.getText();
 				
-			
+				try {
+					client.sendMessage(message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				textoParaEnviar.setText(null);
 			}
 		});
-		botao.setBounds(487, 468, 101, 34);
-		getContentPane().add(botao);
-		botao.setFont(fonte);
+		btnEnviarMsg.setBounds(487, 468, 101, 34);
+		getContentPane().add(btnEnviarMsg);
+		btnEnviarMsg.setFont(fonte);
 	
 		
-		JButton btnConect = new JButton("Conectar");
-		btnConect.addActionListener(new ActionListener() {
+		btnConect = new JButton("Conectar");
+		btnConect.addActionListener(new ActionListener() { // Botão para criar conexão de servidor.
 			public void actionPerformed(ActionEvent arg0) {
+<<<<<<< HEAD
+				// TODO criar lógica para criar um servidor
+				
+				int port = Integer.parseInt(txtPort.getText());
+				String IP = txtIp.getText();
+				
+				server = new ChatServer(textoRecebido, IP, port);
+				
+				try {
+					server.connect();
+					server.escutaCliente();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				setComponents();
+=======
 				
 				ChatServer();
 		
@@ -134,15 +175,31 @@ public class StartChat extends JFrame {
 					
 				
 							
+>>>>>>> upstream/master
 			}
 		});
 		btnConect.setBounds(497, 435, 91, 22);
 		getContentPane().add(btnConect);
 		
+<<<<<<< HEAD
+		txtPort = new JTextField();
+		txtPort.setBounds(421, 435, 62, 20);
+		getContentPane().add(txtPort);
+		
+=======
+>>>>>>> upstream/master
 		JLabel lblNewLabel = new JLabel("Porta");
 		lblNewLabel.setBounds(437, 422, 46, 14);
 		getContentPane().add(lblNewLabel);
 		
+<<<<<<< HEAD
+		txtPortIp = new JTextField();
+		txtPortIp.setText("");
+		txtPortIp.setBounds(118, 435, 71, 20);
+		getContentPane().add(txtPortIp);
+		
+=======
+>>>>>>> upstream/master
 		JLabel lblIp = new JLabel("IP");
 		lblIp.setBounds(51, 422, 46, 14);
 		getContentPane().add(lblIp);
@@ -151,13 +208,23 @@ public class StartChat extends JFrame {
 		lblPorta.setBounds(143, 422, 46, 14);
 		getContentPane().add(lblPorta);
 		
-		JButton btnConectIp = new JButton("Conectar");
+		btnConectIp = new JButton("Conectar");
 		btnConectIp.addActionListener(new ActionListener() {
-			
-
 			public void actionPerformed(ActionEvent x) {
+<<<<<<< HEAD
+				// TODO criar lógica para conectar em um servidor
+				
+				String IP = txtIp.getText();
+				int port = Integer.parseInt(txtPortIp.getText());
+				
+				client = new ChatCliente(IP, port);
+				client.connect();
+				
+				setComponents();
+=======
 				configurarRede();
 				
+>>>>>>> upstream/master
 			}
 		});
 		btnConectIp.setBounds(199, 434, 91, 23);
@@ -174,8 +241,8 @@ public class StartChat extends JFrame {
 		
 		txtIp = new JTextField();
 		txtIp.setBounds(0, 435, 107, 20);
-		getContentPane().add(txtIp);
 		txtIp.setColumns(10);
+		getContentPane().add(txtIp);
 		
 		txtPorta = new JTextField();
 		txtPorta.setBounds(408, 435, 86, 20);
@@ -195,8 +262,20 @@ public class StartChat extends JFrame {
 		setResizable(false);
 		setVisible(true);
 		
-		
 	}
+<<<<<<< HEAD
+	
+	public void setComponents () {
+		txtIp.setEnabled(false);
+		txtPortIp.setEnabled(false);
+		txtPort.setEnabled(false);
+		btnConect.setEnabled(false);
+		btnConectIp.setEnabled(false);
+		textoParaEnviar.setEnabled(true);
+		btnEnviarMsg.setEnabled(true);
+	}
+	
+=======
 //-------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------
 								//Cliente
@@ -326,4 +405,5 @@ public void ChatServer() {
 		}
 
 	}
+>>>>>>> upstream/master
 }
