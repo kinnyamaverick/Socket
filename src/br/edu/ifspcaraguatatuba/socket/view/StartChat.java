@@ -1,22 +1,19 @@
-package br.edu.ifspcaraguatatuba.view;
+package br.edu.ifspcaraguatatuba.socket.view;
 
 import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -24,15 +21,6 @@ import javax.swing.JTextField;
 
 import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer;
-import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente.lerServidor;
-import br.edu.ifspcaraguatatuba.socket.controller.ChatServer.EscutaCliente;
-
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class StartChat extends JFrame {
 
@@ -43,13 +31,17 @@ public class StartChat extends JFrame {
 	//=====================================================================================================================================================
 	
 	private JTextField textoParaEnviar;
-	private JTextField textField;
-	private JTextArea textoRecebido;
-	private JTextArea textArea;
-	
-	private JButton botao;
 	private JTextField txtIp;
-	private JTextField txtPorta;
+	private JTextField txtPort;
+	private JTextField txtPortIp;
+	private JTextArea textoRecebido;
+	
+	private JButton btnEnviarMsg;
+	private JButton btnConectIp;
+	private JButton btnConect;
+	
+	private ChatCliente client;
+	private ChatServer server;
 	
 	
 	//=====================================================================================================================================================	
@@ -71,18 +63,16 @@ public class StartChat extends JFrame {
 		textoParaEnviar = new JTextField();
 		textoParaEnviar.setFont(fonte);
 		textoParaEnviar.addKeyListener (new KeyAdapter() {
-			
-			//Aqui quando digitar algum texto e aperta a tecla 'enter' irá acionar o botão enviar!!!
+			// Aqui quando digitar algum texto e aperta a tecla 'enter' irá acionar o botão enviar!!!
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					botao.doClick();
+					btnEnviarMsg.doClick();
 				}
 				
 			}
 			
 		});
-		
 		
 		Container envio = new JPanel();
 		envio.setBounds(0, 468, 492, 34);
@@ -100,40 +90,45 @@ public class StartChat extends JFrame {
 		
 		getContentPane().add(scroll);
 		getContentPane().add(BorderLayout.SOUTH, envio);
-		botao = new JButton("Enviar");
-		botao.addActionListener(new ActionListener() {
+		btnEnviarMsg = new JButton("Enviar");
+		btnEnviarMsg.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				try {
-					String textoParaEnviar = textField.getText();
-					String textoRecebido = textArea.getText();
-					textoRecebido += InetAddress.getLocalHost().getHostName() + "->" + "Bem vindo \n";
-					textArea.setText(textoRecebido);
-					
-					textField.setText(null);
-					textField.setCaretPosition(0);
-					
-				} catch (Exception e) {
-					e.getMessage();
-				} 
 				
-			
+				String message = textoParaEnviar.getText();
+				try {
+					client.sendMessage(message);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				textoParaEnviar.setText(null);
+				
 			}
 		});
-		botao.setBounds(487, 468, 101, 34);
-		getContentPane().add(botao);
-		botao.setFont(fonte);
+		btnEnviarMsg.setBounds(487, 468, 101, 34);
+		getContentPane().add(btnEnviarMsg);
+		btnEnviarMsg.setFont(fonte);
 	
 		
-		JButton btnConect = new JButton("Conectar");
+		btnConect = new JButton("Conectar");
 		btnConect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				ChatServer();
-		
-					
-					
+				// TODO criar lógica para quando o cliente inicia a conexão
 				
-							
+				String IP = txtIp.getText();
+				int port = Integer.parseInt(txtPort.getText());
+				
+				server = new ChatServer(textoRecebido, IP, port);
+				try {
+					server.connect();
+					server.escutaCliente();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				setComponents();
+				
 			}
 		});
 		btnConect.setBounds(497, 435, 91, 22);
@@ -151,13 +146,15 @@ public class StartChat extends JFrame {
 		lblPorta.setBounds(143, 422, 46, 14);
 		getContentPane().add(lblPorta);
 		
-		JButton btnConectIp = new JButton("Conectar");
+		btnConectIp = new JButton("Conectar");
 		btnConectIp.addActionListener(new ActionListener() {
-			
-
 			public void actionPerformed(ActionEvent x) {
-				configurarRede();
+				// TODO criar lógica para quando se conectar em um servidor
+				String IP = txtIp.getText();
+				int port = Integer.parseInt(txtPortIp.getText());
 				
+				client = new ChatCliente(IP, port);
+				client.connect();
 			}
 		});
 		btnConectIp.setBounds(199, 434, 91, 23);
@@ -177,10 +174,10 @@ public class StartChat extends JFrame {
 		getContentPane().add(txtIp);
 		txtIp.setColumns(10);
 		
-		txtPorta = new JTextField();
-		txtPorta.setBounds(408, 435, 86, 20);
-		getContentPane().add(txtPorta);
-		txtPorta.setColumns(10);
+		txtPort = new JTextField();
+		txtPort.setBounds(408, 435, 86, 20);
+		getContentPane().add(txtPort);
+		txtPort.setColumns(10);
 		
 		txtPortIp = new JTextField();
 		txtPortIp.setBounds(132, 435, 57, 20);
@@ -195,135 +192,15 @@ public class StartChat extends JFrame {
 		setResizable(false);
 		setVisible(true);
 		
-		
 	}
-//-------------------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------------------
-								//Cliente
 	
-	
-	Socket socket;
-	PrintWriter escritor;
-	String nome;
-	Scanner leitor;
-	List<PrintWriter> escritores = new ArrayList<>();
-	private JTextField txtPortIp;
-
-	public class lerServidor implements Runnable {
-
-		Scanner leitor;
-
-		public lerServidor(Socket socket) {
-			try {
-				leitor = new Scanner(socket.getInputStream());
-			} catch (Exception e) {
-
-			}
-		}
-
-		@Override
-		public void run() {
-			try {
-				String texto;
-				while ((texto = leitor.nextLine()) != null) {
-					textoRecebido.append(texto + "\n");
-
-				}
-
-			} catch (Exception x) {
-
-			}
-
-		}
-
-	}
-
-
-	private class EnviarListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			escritor.println(nome + " digitou: " + textoParaEnviar.getText());
-			escritor.flush();
-			textoParaEnviar.setText("");
-			textoParaEnviar.requestFocus();
-		}
-
-	}
-
-	private void configurarRede() {
-		
-		String IP = txtIp.getText(); 
-		int port = Integer.parseInt(txtPortIp.getText());
-		
-		try {
-			socket = new Socket(IP, port);
-			escritor = new PrintWriter(socket.getOutputStream());
-			leitor = new Scanner(socket.getInputStream());
-			new Thread(new lerServidor(socket)).start();
-		} catch (Exception e) {
-
-		}
-	}
-	//-------------------------------------------------------------------------------------
-	//-------------------------------------------------------------------------------------
-	
-								//Servidor
-	
-	
-	
-public void ChatServer() {
-
-		
-		int port = Integer.parseInt(txtPorta.getText());
-		ServerSocket server;
-		
-		
-		
-		
-		
-		try {
-			
-			
-			server = new ServerSocket(port);
-
-			while (true) {
-				System.out.println("Esperando conexção com o cliente");
-				Socket socket = server.accept();
-				System.out.println("Nova conexão com o cliente " + socket.getInetAddress().getHostAddress());
-				new Thread(new EscutaCliente(socket)).start();
-				PrintWriter p = new PrintWriter(socket.getOutputStream());
-				escritores.add(p);
-			}
-		} catch (IOException e) {
-		}
-	}
-
-	public class EscutaCliente implements Runnable {
-
-		Scanner leitor;
-
-		public EscutaCliente(Socket socket) {
-			try {
-				leitor = new Scanner(socket.getInputStream());
-			} catch (Exception e) {
-
-			}
-		}
-
-		@Override
-		public void run() {
-			try {
-				String texto;
-				while ((texto = leitor.nextLine()) != null) {
-					System.out.println(texto);
-					textoRecebido.append(texto);
-
-				}
-			} catch (Exception e) {
-
-			}
-		}
-
+	public void setComponents () {
+		txtIp.setEnabled(false);
+		txtPortIp.setEnabled(false);
+		txtPort.setEnabled(false);
+		btnConect.setEnabled(false);
+		btnConectIp.setEnabled(false);
+		textoParaEnviar.setEnabled(true);
+		btnEnviarMsg.setEnabled(true);
 	}
 }
