@@ -1,15 +1,20 @@
-package br.edu.ifspcaraguatatuba.view;
+package br.edu.ifspcaraguatatuba.socket.view;
 
 import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
-import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.net.InetAddress;
 
 import javax.swing.JButton;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -17,14 +22,6 @@ import javax.swing.JTextField;
 
 import br.edu.ifspcaraguatatuba.socket.controller.ChatCliente;
 import br.edu.ifspcaraguatatuba.socket.controller.ChatServer;
-
-
-import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
-import java.awt.Canvas;
-import java.awt.Color;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class StartChat extends JFrame {
 
@@ -69,7 +66,6 @@ public class StartChat extends JFrame {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					botao.doClick();
 				}
-				
 			}
 			
 		});
@@ -118,8 +114,7 @@ public class StartChat extends JFrame {
 		JButton btnConect = new JButton("Conectar");
 		btnConect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				ChatServer ChatServer = new ChatServer();
-							
+				ChatServer ChatServer = new ChatServer(textArea);
 			}
 		});
 		btnConect.setBounds(497, 435, 91, 22);
@@ -151,7 +146,7 @@ public class StartChat extends JFrame {
 			
 
 			public void actionPerformed(ActionEvent x) {
-				ChatCliente ChatCliente = new ChatCliente();
+				ChatCliente ChatCliente = new ChatCliente("");
 			}
 		});
 		btnConectIp.setBounds(199, 434, 91, 23);
