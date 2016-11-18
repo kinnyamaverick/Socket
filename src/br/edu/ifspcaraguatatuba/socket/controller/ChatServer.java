@@ -1,76 +1,118 @@
 package br.edu.ifspcaraguatatuba.socket.controller;
 
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Scanner;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
 public class ChatServer {
-	Scanner leitor;
-	JTextArea textoRecebido;
-	JFormattedTextField txtPort;
-	JTextField txtIp;
-	List<PrintWriter> escritores = new ArrayList<>();
-	public ChatServer(JTextArea text) {
-
-		this.textoRecebido = text;
-
-		ServerSocket server;
-		
-		
-		
-		
-		
-		try {
-			
-			//int port = Integer.parseInt(txtPort.getText());
-			server = new ServerSocket(2000);
-
-			while (true) {
-
-				Socket socket = server.accept();
-				System.out.println("Nova conexão com o cliente " + socket.getInetAddress().getHostAddress());
-				new Thread(new EscutaCliente(socket)).start();
-				PrintWriter p = new PrintWriter(socket.getOutputStream());
-				escritores.add(p);
-			}
-		} catch (IOException e) {
-		}
+	
+	private Scanner leitor;
+	private JTextArea txtArea;
+	private int port;
+	private String IP;
+	
+	private ServerSocket server;
+	private Socket client;
+	
+	//====================================================================================================================================
+	//=====================================================Construtor=====================================================================
+	//====================================================================================================================================
+	public ChatServer(JTextArea txtArea, String IP, int port) {
+		this.txtArea = txtArea;
+		this.IP = IP;
+		this.port = port;
 	}
 
-	public class EscutaCliente implements Runnable {
-
-		Scanner leitor;
-
-		public EscutaCliente(Socket socket) {
-			try {
-				leitor = new Scanner(socket.getInputStream());
-			} catch (Exception e) {
-
-			}
-		}
-
-		@Override
-		public void run() {
-			try {
-				String texto;
-				while ((texto = leitor.nextLine()) != null) {
-					System.out.println(texto);
-					textoRecebido.append(texto);
-
+	public ChatServer() {}
+	//====================================================================================================================================
+	//=======================================================Métodos======================================================================
+	//====================================================================================================================================
+	
+	public void connect () throws IOException {
+		server = new ServerSocket(port);
+	}
+	
+	public void escutaCliente () {
+		Runnable r = new Runnable() {
+			
+			@Override
+			public void run() {
+				// TODO implementar thread
+				
+				try {
+					txtArea.append("Aguardando conexão do cliente");
+					setClient(server.accept()); // aguarda conexão de um cliente
+					
+					txtArea.setText(null);
+					txtArea.append("Cliente conectado");
+					
+					
+					leitor = new Scanner(client.getInputStream());
+					
+					while (leitor.hasNextLine())
+						txtArea.append("\n" + leitor.nextLine());
+					
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-			} catch (Exception e) {
-
 			}
-		}
+		};
+		
+		Thread thread = new Thread(r);
+		thread.setPriority(Thread.MAX_PRIORITY);
+		thread.start();
+		
+	}
 
+	public Scanner getLeitor() {
+		return leitor;
+	}
+
+	public void setLeitor(Scanner leitor) {
+		this.leitor = leitor;
+	}
+
+	public JTextArea getTxtArea() {
+		return txtArea;
+	}
+
+	public void setTxtArea(JTextArea txtArea) {
+		this.txtArea = txtArea;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public String getIP() {
+		return IP;
+	}
+
+	public void setIP(String iP) {
+		IP = iP;
+	}
+
+	public ServerSocket getServer() {
+		return server;
+	}
+
+	public void setServer(ServerSocket server) {
+		this.server = server;
+	}
+
+	public Socket getClient() {
+		return client;
+	}
+
+	public void setClient(Socket client) {
+		this.client = client;
 	}
 
 }

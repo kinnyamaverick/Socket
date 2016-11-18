@@ -1,119 +1,88 @@
 package br.edu.ifspcaraguatatuba.socket.controller;
 
-import java.awt.BorderLayout;
-import java.awt.Container;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
-import javax.swing.JTextField;
 
-public class ChatCliente extends JFrame {
+public class ChatCliente {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	JTextField textoParaEnviar;
-	Socket socket;
-	PrintWriter escritor;
-	String nome;
-	static JTextArea textoRecebido;
-	Scanner leitor;
-	List<PrintWriter> escritores = new ArrayList<>();
-
-	private class lerServidor implements Runnable {
-
-		Scanner leitor;
-
-		public lerServidor(Socket socket) {
-			try {
-				leitor = new Scanner(socket.getInputStream());
-			} catch (Exception e) {
-
-			}
-		}
-
-		@Override
-		public void run() {
-			try {
-				String texto;
-				while ((texto = leitor.nextLine()) != null) {
-					textoRecebido.append(texto + "\n");
-
-				}
-
-			} catch (Exception x) {
-
-			}
-
-		}
-
+	private JTextArea txtArea;
+	private ServerSocket server;
+	private Socket client;
+	private String IP;
+	private int port;
+	
+	//=======================================================================================================
+	//=============================================Construtor================================================
+	//=======================================================================================================
+	
+	public ChatCliente(String IP, int port) {
+		this.IP = IP;
+		this.port = port;
 	}
-
-	public ChatCliente(String nome) {
-		super("Chat " + nome);
-		this.nome = nome;
-
-		Font fonte = new Font("Serif", Font.PLAIN, 26);
-		textoParaEnviar = new JTextField();
-		textoParaEnviar.setFont(fonte);
-		JButton botao = new JButton("Enviar");
-		botao.setFont(fonte);
-		botao.addActionListener(new EnviarListener());
-
-		Container envio = new JPanel();
-		envio.setLayout(new BorderLayout());
-		envio.add(BorderLayout.CENTER, textoParaEnviar);
-		envio.add(BorderLayout.EAST, botao);
-		getContentPane().add(BorderLayout.SOUTH, envio);
-
-		textoRecebido = new JTextArea();
-		textoRecebido.setFont(fonte);
-		JScrollPane scroll = new JScrollPane(textoRecebido);
-
-		getContentPane().add(BorderLayout.CENTER, scroll);
-		getContentPane().add(BorderLayout.SOUTH, envio);
-
-		configurarRede();
-
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setSize(500, 500);
-		setVisible(true);
-		setLocationRelativeTo(null);
-	}
-
-	private class EnviarListener implements ActionListener {
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			escritor.println(nome + " digitou: " + textoParaEnviar.getText());
-			escritor.flush();
-			textoParaEnviar.setText("");
-			textoParaEnviar.requestFocus();
-		}
-
-	}
-
-	private void configurarRede() {
+	//=======================================================================================================
+	//================================================Métodos================================================
+	//=======================================================================================================
+	public boolean connect () {
+		boolean result = true;
+		
 		try {
-			socket = new Socket("10.10.112.5", 2001);
-			escritor = new PrintWriter(socket.getOutputStream());
-			leitor = new Scanner(socket.getInputStream());
-			new Thread(new lerServidor(socket)).start();
-		} catch (Exception e) {
-
+			client = new Socket(IP, port);
+		} catch (IOException e) {
+			e.printStackTrace();
+			result = false;
 		}
+		
+		return result;
 	}
+	
+	public void sendMessage (String message) throws IOException {
+		PrintStream exit = new PrintStream(client.getOutputStream());
+		exit.println(message);
+	}
+	
+	public String getIP() {
+		return IP;
+	}
+	
+	public void setIP(String iP) {
+		IP = iP;
+	}
+	
+	public int getPort() {
+		return port;
+	}
+	
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public JTextArea getTxtArea() {
+		return txtArea;
+	}
+
+	public void setTxtArea(JTextArea txtArea) {
+		this.txtArea = txtArea;
+	}
+
+	public ServerSocket getServer() {
+		return server;
+	}
+
+	public void setServer(ServerSocket server) {
+		this.server = server;
+	}
+
+	public Socket getClient() {
+		return client;
+	}
+
+	public void setClient(Socket client) {
+		this.client = client;
+	}
+	
 
 }
